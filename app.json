@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "moeda",
+    "slug": "moeda",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
