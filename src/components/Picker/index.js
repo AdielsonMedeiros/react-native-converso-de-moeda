@@ -2,9 +2,11 @@ import React from 'react';
 import {Picker} from '@react-native-picker/picker'
 
 export default function Picker2(){
-    return(
-        <Picker
-        items= {[{ key: '1', label: 'USD', value: 'USD',},{ key: '2' , label: 'EUR', value: 'EUR',}]}
-        onValueChange={ (valor)=> console.log(valor)}/>
-    );
-}
+    const [moeda,setMoeda] = useState([
+        { key: '1', nome: 'USD', valor: 10},
+        { key: '2' , nome: 'EUR', valor: 10},
+      ]);
+      let MoedasItem = moeda.map( (v,k)  => {
+        return <Picker.Item key={k} value={k} label= {v.nome}/>
+      })
+    }

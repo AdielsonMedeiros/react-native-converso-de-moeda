@@ -1,49 +1,72 @@
 import React from 'react';
-import { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import {Picker} from '@react-native-picker/picker'
+import api from './src/services/api'
 
 export default function App() {
 
+const [loading, setLoading]= useState(true)
+const [moedaSelect, setMoedaSelecionada]= useState(null)
+const [moedaBValor, setMoedaBValor]= useState(0)
 
-/*const placeholder = {
-  label: 'Selecione uma moeda...',
-  value: null,
-  color: '#000'
-}*/
-
-const [moedaSelect, setMoedaSelecionada]= useState(0)
 const [moeda,setMoeda] = useState([
   { key: '1', nome: 'USD', valor: 10},
   { key: '2' , nome: 'EUR', valor: 10},
 ]);
 
-let MoedasItem = moeda.map( (v,k)  => {
-  return <Picker.Item key={k} value={k} label= {v.nome}/>
+let MoedasItem = moeda.map( (v)  => {
+  return <Picker.Item key={v.key} value={v.key} label= {v.key}/>
 })
 
+useEffect (()=>{
+  async function loadMoedas(){
+    const response = await api.get('all')
+    let arrayMoedas = []
+    Object.keys(response.data).map((key)=>{
+      arrayMoedas.push({
+        key: key,
+        label: key,
+        value: key
+      })
+    })
+    setMoeda (arrayMoedas)
+    setLoading(false)
+  }
+
+  loadMoedas();
+},[])
 
 
+if(loading){
+  return(
+  <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1}}>
+    <ActivityIndicator color="#FFF" size={45}/>
+  </View>
 
+  )
+} else {
 
   return (
     <View style={styles.container}>
       <View style={styles.areaMoeda}>
         <Text style={styles.titulo}> Selecione sua moeda </Text>
-
+  
         <Picker selectedValue={moedaSelect}
-      onValueChange={(itemValue, itemIndex)=> setMoedaSelecionada(itemValue)} >
+         onChange={(itemValue, itemIndex)=> setMoedaSelecionada(itemValue)}
+         onValueChange={(valor)=> setMoedaSelecionada(valor)}
+         >
       {MoedasItem}
-
+  
       </Picker>
       <View style={styles.areaValor}>
       <Text style={styles.titulo}> Digite um valor para converter em R$: </Text>
-      <TextInput placeholder='Ex: 150' style={styles.input} keyboardType='numeric'/>
+      <TextInput placeholder='Ex: 150' style={styles.input} keyboardType='numeric' onChangeText={ (value)=> setMoedaBValor(value)}/>
       </View>
         <TouchableOpacity style={ styles.botaoArea}>
           <Text style={styles.botaoTexto}> Converter </Text>
         </TouchableOpacity>
-
+  
       </View>
         <View style={styles.areaResultado}>
           <Text style={styles.valorConvertido}> 5 usd</Text>
@@ -53,6 +76,12 @@ let MoedasItem = moeda.map( (v,k)  => {
     </View>
   );
 }
+}
+
+
+
+
+
 
 const styles = StyleSheet.create({
   container: {
