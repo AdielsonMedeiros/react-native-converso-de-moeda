@@ -1,14 +1,17 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Keyboard } from 'react-native';
 import {Picker} from '@react-native-picker/picker'
 import api from './src/services/api'
+
 
 export default function App() {
 
 const [loading, setLoading]= useState(true)
 const [moedaSelect, setMoedaSelecionada]= useState(null)
 const [moedaBValor, setMoedaBValor]= useState(0)
+const [valorMoeda, setValorMoeda] = useState(null)
+const [valorConvertido, setValorConvertido] = useState(0)
 
 const [moeda,setMoeda] = useState([
   { key: '1', nome: 'USD', valor: 10},
@@ -37,6 +40,23 @@ useEffect (()=>{
   loadMoedas();
 },[])
 
+async function converter(){
+  if (moedaSelect === null || moedaBValor === 0){
+    alert('por favor selecione uma moeda')
+    return;
+  }
+  //USD-BRL ele devolve quanto é 1 dolar convertido pra reais//
+  const response = await api.get(`all/${moedaSelect}-BRL`);
+  //*console.log(response.data[moedaSelect].ask);
+
+  let resultado = (response.data[moedaSelect].ask * parseFloat(moedaBValor))
+  setValorConvertido(`R$ ${resultado.toFixed(2)}`);
+  setValorMoeda(moedaBValor)
+
+// fecha teclado caso ele esteja aberto
+  Keyboard.dismiss();
+}
+
 
 if(loading){
   return(
@@ -63,16 +83,18 @@ if(loading){
       <Text style={styles.titulo}> Digite um valor para converter em R$: </Text>
       <TextInput placeholder='Ex: 150' style={styles.input} keyboardType='numeric' onChangeText={ (value)=> setMoedaBValor(value)}/>
       </View>
-        <TouchableOpacity style={ styles.botaoArea}>
+        <TouchableOpacity style={ styles.botaoArea} onPress={converter}>
           <Text style={styles.botaoTexto}> Converter </Text>
         </TouchableOpacity>
-  
       </View>
+      {valorConvertido !== 0 &&(
+
         <View style={styles.areaResultado}>
-          <Text style={styles.valorConvertido}> 5 usd</Text>
+          <Text style={styles.valorConvertido}> {valorMoeda} {moedaSelect}</Text>
           <Text style={[styles.valorConvertido, {fontSize: 18, margin: 10}]}> corresponde a </Text>
-          <Text style={styles.valorConvertido}> 1 milhao de reais </Text>
+          <Text style={styles.valorConvertido}> {valorConvertido} </Text>
         </View>
+      )}
     </View>
   );
 }
@@ -88,7 +110,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingTop: 35,
     marginTop: 25,
   },
@@ -132,11 +153,12 @@ const styles = StyleSheet.create({
 
   areaResultado:{
     marginTop: 35,
-    width: '90%',
+    width: '85%',
     backgroundColor: '#FFF',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 25,
+    borderRadius: 5
   },
   valorConvertido:{
     fontSize: 39,
